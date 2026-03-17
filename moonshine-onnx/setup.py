@@ -1,6 +1,5 @@
 from pathlib import Path
 
-import pkg_resources
 from setuptools import setup
 
 
@@ -28,10 +27,9 @@ setup(
     url="https://github.com/moonshine-ai/moonshine",
     license="MIT",
     install_requires=[
-        str(r)
-        for r in pkg_resources.parse_requirements(
-            Path(__file__).with_name("requirements.txt").open()
-        )
+        line.strip()
+        for line in Path(__file__).with_name("requirements.txt").open()
+        if line.strip() and not line.startswith("#")
     ],
     include_package_data=True,
 )

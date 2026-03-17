@@ -1,6 +1,5 @@
 from pathlib import Path
 
-import pkg_resources
 from setuptools import find_packages, setup
 
 
@@ -28,10 +27,9 @@ setup(
     license="MIT",
     packages=find_packages(exclude=["tests*"]),
     install_requires=[
-        str(r)
-        for r in pkg_resources.parse_requirements(
-            Path(__file__).with_name("requirements.txt").open()
-        )
+        line.strip()
+        for line in Path(__file__).with_name("requirements.txt").open()
+        if line.strip() and not line.startswith("#")
     ],
     extras_require={
         "tensorflow": ["tensorflow==2.17.0"],
