@@ -57,7 +57,7 @@ class MoonshineOnnxModel(object):
     def _load_weights_from_hf_hub(self, model_name, model_precision):
         return _get_onnx_weights(model_name, model_precision)
 
-    def generate(self, audio, max_len=None, repetition_penalty=1.2, repetition_window=10):
+    def generate(self, audio, max_len=None, repetition_penalty=1.0, repetition_window=10):
         """Generate tokens from audio.
 
         Args:
