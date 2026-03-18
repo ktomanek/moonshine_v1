@@ -57,8 +57,16 @@ class MoonshineOnnxModel(object):
     def _load_weights_from_hf_hub(self, model_name, model_precision):
         return _get_onnx_weights(model_name, model_precision)
 
-    def generate(self, audio, max_len=None):
-        "audio has to be a numpy array of shape [1, num_audio_samples]"
+    def generate(self, audio, max_len=None, repetition_penalty=1.2, repetition_window=10):
+        """Generate tokens from audio.
+
+        Args:
+            audio: numpy array of shape [1, num_audio_samples]
+            max_len: maximum number of tokens to generate (default: 192)
+            repetition_penalty: penalty for repeating tokens (default: 1.2).
+                Values > 1.0 discourage repetition. Set to 1.0 to disable.
+            repetition_window: number of recent tokens to apply penalty to (default: 10)
+        """
         if max_len is None:
             max_len = 192
 
@@ -98,6 +106,16 @@ class MoonshineOnnxModel(object):
                 )
 
             logits, *present_key_values = self.decoder.run(None, decoder_inputs)
+
+            # Apply repetition penalty to recent tokens
+            if repetition_penalty != 1.0 and len(tokens) > 1:
+                recent_tokens = tokens[-repetition_window:]
+                for prev_token in set(recent_tokens):
+                    if logits[0, -1, prev_token] > 0:
+                        logits[0, -1, prev_token] /= repetition_penalty
+                    else:
+                        logits[0, -1, prev_token] *= repetition_penalty
+
             next_token = logits[0, -1].argmax().item()
             tokens.append(next_token)
             if next_token == self.eos_token_id:
